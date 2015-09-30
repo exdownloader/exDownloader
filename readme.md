@@ -1,7 +1,7 @@
 ##ExDownloader
 A JavaFX tool to facilitate the process of downloading content from [exhentai](http://exhentai.org/).
 
-![Alt text](./ex/doc/UI.png "Optional Title")
+![Alt text](./ex/doc/UI.png?raw=true "UI")
 
 Provides functionality for downloading a list of gallery URLs and tracking progress.
 Features include:
