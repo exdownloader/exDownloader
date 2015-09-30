@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+    SVGPath content borrowed from: http://glyph.smarticons.co/
+-->
+
+<VBox prefHeight="400.0" prefWidth="600.0" style="-fx-base: #373737;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="UI.MainForm">
+   <children>
+       <AnchorPane maxHeight="40.0" minHeight="40.0" prefHeight="40.0">
+          <children>
+            <ToolBar prefHeight="40.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <items>
+                     <Button fx:id="btn_Add" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="Add">
+                         <graphic>
+                             <Pane mouseTransparent="true">
+                                <children>
+                                    <SVGPath content="M7.927,0.062 L2.073,0.114 L2.052,9.947 L4.021,9.962 L4.021,11.979 L6,11.979 L6,15.062 L4.062,15.062 L4.062,16 L6,16 L7.312,16 L13.969,16 L13.969,6.012 L7.927,6.012 L7.927,0.062 Z" fill="#6EE96E" />
+                                    <SVGPath content="M9,0 L9,4.969 L14,4.969 L9,0 Z" fill="#6EE96E" />
+                                    <SVGPath content="M4.979,13 L2.992,13 L2.992,11 L2.029,11 L2.029,13 L0.021,13 L0.021,13.986 L2.029,13.986 L2.029,15.994 L2.992,15.994 L2.992,13.986 L4.979,13.986 L4.979,13 Z" fill="#6EE96E" />
+                                </children>
+                             </Pane>
+                         </graphic>
+                         <padding>
+                             <Insets bottom="6.0" left="8.0" right="8.0" top="6.0" />
+                         </padding>
+                     </Button>
+                     <Button fx:id="btn_Remove" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="Remove">
+                         <graphic>
+                             <Pane mouseTransparent="true">
+                                <children>
+                                    <SVGPath content="M13.969,16 L13.969,6.012 L8,6.012 L8,0.062 L2,0 L2,14 L6,13.969 L6,16 L13.969,16 Z" fill="#FF5656" />
+                                    <SVGPath content="M9,0 L9,4.969 L13.917,4.969 L9,0 Z" fill="#FF5656" />
+                                    <SVGPath content="M5.02913267e-11,15 L-9.1502443e-08,15.9373779 L4.98986807,15.9373779 L4.98986816,15 L5.02913267e-11,15 Z" fill="#FF5656" />
+                                </children>
+                             </Pane>
+                         </graphic>
+                         <padding>
+                             <Insets bottom="6.0" left="8.0" right="8.0" top="6.0" />
+                         </padding>
+                     </Button>
+                     <Button fx:id="btn_Start" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="Start">
+                         <graphic>
+                             <Pane mouseTransparent="true">
+                                 <children>
+                                     <SVGPath fx:id="gfx_Stop" content="M9.016,0.06 C4.616,0.06 1.047,3.629 1.047,8.029 C1.047,12.429 4.615,15.998 9.016,15.998 C13.418,15.998 16.985,12.429 16.985,8.029 C16.985,3.629 13.418,0.06 9.016,0.06 L9.016,0.06 Z M3.049,8.028 C3.049,4.739 5.726,2.062 9.016,2.062 C10.37,2.062 11.616,2.52 12.618,3.283 L4.271,11.631 C3.508,10.629 3.049,9.381 3.049,8.028 L3.049,8.028 Z M9.016,13.994 C7.731,13.994 6.544,13.583 5.569,12.889 L13.878,4.58 C14.571,5.555 14.982,6.743 14.982,8.028 C14.981,11.317 12.306,13.994 9.016,13.994 L9.016,13.994 Z" fill="#FF5656" visible="false" />
+                                     <SVGPath fx:id="gfx_Start" content="M14.289,0.023 L6.925,0 L2.984,8 L8,8 L3.666,15.916 L14.924,4.941 L10.35,4.941 L14.289,0.023 Z" fill="#fff285" visible="true" />
+                                 </children>
+                             </Pane>
+                         </graphic>
+                         <padding>
+                             <Insets bottom="6.0" left="8.0" right="8.0" top="6.0" />
+                         </padding>
+                     </Button>
+                      <Pane HBox.hgrow="ALWAYS" />
+                     <Button fx:id="btn_Settings" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="Settings">
+                         <graphic>
+                             <Pane mouseTransparent="true">
+                                 <children>
+                                     <SVGPath content="M15.969,8.969 L15.969,7.011 L13.899,7.011 C13.747,6.104 13.392,5.266 12.88,4.546 L14.343,3.083 L12.929,1.669 L11.466,3.132 C10.746,2.619 9.909,2.265 9.001,2.111 L9.001,0.042 L7.001,0.042 L7.001,2.111 C6.093,2.264 5.256,2.619 4.536,3.132 L3.073,1.669 L1.688,3.053 L3.147,4.512 C2.622,5.24 2.256,6.088 2.101,7.011 L0.032,7.011 L0.032,8.969 L2.095,8.969 C2.243,9.893 2.601,10.744 3.121,11.476 L1.658,12.939 L3.072,14.353 L4.535,12.89 C5.255,13.403 6.092,13.757 7,13.911 L7,15.98 L9,15.98 L9,13.911 C9.922,13.755 10.771,13.391 11.499,12.865 L12.957,14.323 L14.342,12.939 L12.879,11.476 C13.398,10.745 13.757,9.893 13.905,8.969 L15.969,8.969 L15.969,8.969 Z M8.021,11.062 C6.319,11.062 4.938,9.681 4.938,7.979 C4.938,6.277 6.319,4.896 8.021,4.896 C9.723,4.896 11.104,6.277 11.104,7.979 C11.104,9.681 9.723,11.062 8.021,11.062 L8.021,11.062 Z" fill="#CCCCCC"/>
+                                 </children>
+                             </Pane>
+                         </graphic>
+                         <padding>
+                             <Insets bottom="6.0" left="8.0" right="8.0" top="6.0" />
+                         </padding>
+                     </Button>
+              </items>
+            </ToolBar>
+          </children>
+       </AnchorPane>
+       <AnchorPane prefHeight="360.0" VBox.vgrow="ALWAYS">
+          <children>
+                 <TableView fx:id="tree_Tasks" prefHeight="360.0" prefWidth="263.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" >
+                     <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+                 </TableView>
+          </children>
+       </AnchorPane>
+   </children>
+</VBox>
