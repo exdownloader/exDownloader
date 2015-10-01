@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import java.nio.file.Paths;
 
 public class Main extends Application
 {
@@ -36,6 +37,7 @@ public class Main extends Application
     public static void main(String[] args)
     {
         Util.makeDir(Util.fileOutput);
+        Util.makeDir(Paths.get(Util.fileOutput, Util.fileDownloads).toString());
         Util.parseConfig();
         Debug.create();
         launch(args);

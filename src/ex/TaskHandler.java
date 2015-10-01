@@ -17,6 +17,7 @@ public class TaskHandler
     private GalleryDownloader _currentTask;
     private boolean isStopping = false;
     public BooleanProperty isBusy = new SimpleBooleanProperty(false);
+    public ExInfo exInfo = new ExInfo();
 
     public TaskHandler()
     {
@@ -41,12 +42,11 @@ public class TaskHandler
         if(_tasks.size() == 0) return;
         isBusy.set(true);
 
-        ExInfo _exInfo = new ExInfo();
-        _exInfo.populateInfo();
-        String _strExInfo = String.format(str_ExInfoLimit, _exInfo.limitCurrent, _exInfo.limitMax, _exInfo.limitRecoverRate);
+        exInfo.populateInfo();
+        String _strExInfo = String.format(str_ExInfoLimit, exInfo.limitCurrent, exInfo.limitMax, exInfo.limitRecoverRate);
         Debug.Log(_strExInfo);
 
-        if(_exInfo.limitCurrent < _exInfo.limitMax)
+        if(exInfo.limitCurrent < exInfo.limitMax)
         {
             isStopping = false;
             _taskThread = new Thread(this::Download);

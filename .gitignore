@@ -1,3 +1,6 @@
 /out/
 /JAR/
+/ex/out/
+/ex/log.txt
 /.idea/workspace.xml
+/Logging_Error.txt

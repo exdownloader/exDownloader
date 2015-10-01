@@ -9,7 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.input.MouseEvent;
+import javafx.event.ActionEvent;
 import javafx.scene.shape.SVGPath;
 
 import java.net.URL;
@@ -29,10 +29,11 @@ public class MainForm implements Initializable
 
     @FXML private SVGPath gfx_Stop;
     @FXML private SVGPath gfx_Start;
+    @FXML private Hyperlink lbl_ExInfo;
 
     private static final String rgx_ID = "^http://exhentai.org/g/(\\w+)/(\\w+)/?$";
 
-    private final String str_UI_Button_Pressed = "Button pressed: %s";
+    private final String str_UI_Control_Clicked = "Control clicked: %s";
     private final String str_UI_TT_AddTask = "Add Task";
     private final String str_UI_TT_RemoveTask = "Remove Task";
     private final String str_UI_TT_StartTasks = "Start Tasks";
@@ -48,11 +49,6 @@ public class MainForm implements Initializable
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources)
     {
-        btn_Add.setOnMouseClicked(this::buttonClicked);
-        btn_Remove.setOnMouseClicked(this::buttonClicked);
-        btn_Start.setOnMouseClicked(this::buttonClicked);
-        btn_Settings.setOnMouseClicked(this::buttonClicked);
-
         btn_Add.setTooltip(new Tooltip(str_UI_TT_AddTask));
         btn_Remove.setTooltip(new Tooltip(str_UI_TT_RemoveTask));
         btn_Start.setTooltip(new Tooltip(str_UI_TT_StartTasks));
@@ -109,19 +105,21 @@ public class MainForm implements Initializable
 
         gfx_Start.visibleProperty().bind(_th.isBusy.not());
         gfx_Stop.visibleProperty().bind(_th.isBusy);
+        lbl_ExInfo.textProperty().bind(_th.exInfo._infoString);
 
         Debug.Log("Initialised.");
         Debug.InsertBlank();
 
         parseList();
     }
-    public void buttonClicked(MouseEvent event)
-    {
-        Button b = (Button) event.getTarget();
-        String id = b.getId();
-        Debug.Log(String.format(str_UI_Button_Pressed, id));
 
-        if(b == btn_Start)
+    public void controlClicked(ActionEvent event)
+    {
+        Control source = (Control) event.getSource();
+        String id = source.getId();
+        Debug.Log(String.format(str_UI_Control_Clicked, id));
+
+        if(source == btn_Start)
         {
             if(!_th.isBusy.get())
             {
@@ -132,7 +130,7 @@ public class MainForm implements Initializable
                 _th.Stop();
             }
         }
-        else if(b == btn_Add)
+        else if(source == btn_Add)
         {
             TextInputDialog dialog = new TextInputDialog("");
             dialog.setTitle("");
@@ -150,14 +148,18 @@ public class MainForm implements Initializable
                 }
             });
         }
-        else if(b == btn_Remove)
+        else if(source == btn_Remove)
         {
             if(_th.isBusy.get()) return;
             _th.removeTask(tree_Tasks.getSelectionModel().getSelectedItem());
         }
-        else if(b == btn_Settings)
+        else if(source == btn_Settings)
         {
             Util.launchFile(Paths.get(Util.fileOutput, Util.fileConf).toString());
+        }
+        else if(source == lbl_ExInfo)
+        {
+            _th.exInfo.populateInfo();
         }
     }
     public void Terminate()

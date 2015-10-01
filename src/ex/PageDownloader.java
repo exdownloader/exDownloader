@@ -133,6 +133,11 @@ public class PageDownloader extends Task<DownloadResult> implements OnProgressLi
     @Override
     protected DownloadResult call() throws Exception
     {
+        if(Util.exFileExists(_path))
+        {
+            Debug.Log(String.format(str_Skipped, _path));
+            return DownloadResult.SKIPPED;
+        }
         if(_pageURL == null) return DownloadResult.FAILURE;
         try
         {
@@ -146,11 +151,7 @@ public class PageDownloader extends Task<DownloadResult> implements OnProgressLi
             Debug.Log(String.format(str_Downloading, _imageLink));
 
             String _output = String.format("%s.%s", _path, getExtension(_imageLink));
-            if(Util.fileExists(_output))
-            {
-                Debug.Log(String.format(str_Skipped, _output));
-                return DownloadResult.SKIPPED;
-            }
+
             _fos = new FileOutputStream(_output);
             URLConnection connection = new URL(_imageLink).openConnection();
             connection.setRequestProperty("User-Agent", Util.USER_AGENT);

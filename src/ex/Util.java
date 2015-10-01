@@ -25,6 +25,7 @@ public class Util
     public static final String fileList = "list.txt";
     public static final String fileLog = "log.txt";
     public static final String fileOutput = "ex";
+    public static final String fileDownloads = "out";
 
     public static final String file_Err_PageDownloaderRegexFailed = "PageDownloaderRegexFailed.txt";
     public static final String file_Err_GalleryThumbFinderRegexFailed = "GalleryThumbFinderRegexFailed.txt";
@@ -158,9 +159,12 @@ public class Util
         }
     }
 
-    public static Boolean fileExists(String path)
+    public static Boolean exFileExists(String path)
     {
-        boolean b = Files.exists(Paths.get(path));
+        boolean b = Files.exists(Paths.get(path + ".jpg")) ||
+                    Files.exists(Paths.get(path + ".bmp")) ||
+                    Files.exists(Paths.get(path + ".png")) ||
+                    Files.exists(Paths.get(path + ".gif"));
         return b;
     }
 }

@@ -129,7 +129,7 @@ public class GalleryDownloader
             return GalleryResult.FAILURE;
         }
 
-        _outFol = Paths.get(Util.fileOutput, _galleryName.get()).toString();
+        _outFol = Paths.get(Util.fileOutput, Util.fileDownloads, _galleryName.get()).toString();
         Util.makeDir(_outFol);
 
         try
