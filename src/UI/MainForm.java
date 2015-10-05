@@ -1,6 +1,7 @@
 package UI;
 
 import ex.*;
+import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -105,7 +106,7 @@ public class MainForm implements Initializable
 
         gfx_Start.visibleProperty().bind(_th.isBusy.not());
         gfx_Stop.visibleProperty().bind(_th.isBusy);
-        lbl_ExInfo.textProperty().bind(_th.exInfo._infoString);
+        lbl_ExInfo.textProperty().bind(_th.exInfo.messageProperty());
 
         Debug.Log("Initialised.");
         Debug.InsertBlank();
@@ -121,14 +122,10 @@ public class MainForm implements Initializable
 
         if(source == btn_Start)
         {
-            if(!_th.isBusy.get())
-            {
-                _th.Start();
-            }
+            if(_th.isBusy.get())
+                new Thread(_th::Stop).start();
             else
-            {
-                _th.Stop();
-            }
+                new Thread(_th::Start).start();
         }
         else if(source == btn_Add)
         {
@@ -159,7 +156,7 @@ public class MainForm implements Initializable
         }
         else if(source == lbl_ExInfo)
         {
-            _th.exInfo.populateInfo();
+            new Thread(_th.exInfo::populateInfo).start();
         }
     }
     public void Terminate()

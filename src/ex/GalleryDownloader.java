@@ -4,13 +4,14 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.concurrent.Task;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GalleryDownloader
+public class GalleryDownloader extends Task<GalleryResult>
 {
     private static final String str_Gallery_Images_Pages = "GalleryDownloader found %s image(s) across %s page(s).";
     private static final String str_Gallery_Removed = "GalleryDownloader found an empty gallery at %s";
@@ -24,7 +25,7 @@ public class GalleryDownloader
     private static final String rgx_ID = "(http://)?exhentai.org/g/(\\w+)/(\\w+)/?";
     private static final String rgx_GalleryRemoved = "<title>GalleryDownloader Not Available";
     private static final String rgx_Gallery = "http://exhentai.org/g/(\\w+/){2}\\?p=(\\d+)";
-    private static final String rgx_ImageCount = "Showing \\d+ - \\d+ of (\\d+) images";
+    private static final String rgx_ImageCount = "Showing (\\d+) - (\\d+) of (\\d+) images";
     private static final String rgx_GalleryName = "id=\"gn\">(.*?)<";
 
     private String _url;
@@ -32,9 +33,11 @@ public class GalleryDownloader
     private String _pt;
     private String _gid;
     private int _imageCount;
+    private int _imagesPerPage = 20;
     private String _outFol;
-    private ArrayList<PageDownloader> _pages;
+    private ArrayList<Download> _downloads;
     private ArrayList<String> _pageURLs;
+
 
     private StringProperty _galleryName = new SimpleStringProperty("");
     private StringProperty _galleryState = new SimpleStringProperty("");
@@ -51,7 +54,7 @@ public class GalleryDownloader
         _gid = m.group(3);
 
         _url = url;
-        _pages = new ArrayList<>();
+        _downloads = new ArrayList<>();
         _pageURLs = new ArrayList<>();
 
         _galleryName.setValue(_url);
@@ -75,19 +78,6 @@ public class GalleryDownloader
         return _matches.size() > 0;
     }
 
-    private int findPageCount()
-    {
-        ArrayList<String> pageNumbers = Util.getRegex(_html, rgx_Gallery, 2);
-        int maxPages = 0;
-        for(String p : pageNumbers)
-        {
-            int parsedMax = Integer.parseInt(p);
-            if(parsedMax > maxPages)
-                maxPages = parsedMax;
-        }
-        return maxPages;
-    }
-
     private ArrayList<String> findThumbsOnPage(String _pageURL)
     {
         String _pageHTML = new HTMLDownloader(_pageURL).get();
@@ -101,9 +91,56 @@ public class GalleryDownloader
         _gtf.Process();
         return _gtf.thumbURLs();
     }
-
-    public GalleryResult Download() throws Exception
+    private void populateImageCount()
     {
+        _imageCount = 0;
+        try
+        {
+            Matcher m = Pattern.compile(rgx_ImageCount).matcher(_html);
+            if(! m.find()) throw new Exception("");
+
+            int min = Integer.parseInt(Util.getRegex(_html, rgx_ImageCount, 1).get(0));
+            int max = Integer.parseInt(Util.getRegex(_html, rgx_ImageCount, 2).get(0));
+            _imagesPerPage = (max - min) + 1;
+            _imageCount = Integer.parseInt(Util.getRegex(_html, rgx_ImageCount, 3).get(0));
+        }
+        catch (Exception e)
+        {
+            Debug.Log(String.format(str_Gallery_Count_Error, _url));
+        }
+    }
+    private void populateGalleryPages()
+    {
+        _pageURLs.clear();
+        int _pageCount = _imageCount / _imagesPerPage;
+        Debug.Log(String.format(str_Gallery_Images_Pages, _imageCount, _pageCount + 1));
+        String _baseURL = String.format("http://exhentai.org/g/%s/%s/?p=", _pt, _gid);
+        for(int i = 0; i <= _pageCount; i++)
+            _pageURLs.add(_baseURL + String.valueOf(i));
+    }
+    private void populateThumbs()
+    {
+        FileNameProvider _fnp = new FileNameProvider(_imageCount);
+        setGalleryState("Thumbs");
+        _downloads.clear();
+        for(int i = 0; i < _pageURLs.size(); i++)
+        {
+            _progress.set(String.format("%s/%s", i+1, _pageURLs.size()));
+            ArrayList<String> _thumbURLs = findThumbsOnPage(_pageURLs.get(i));
+            for(String _thumbURL : _thumbURLs)
+                _downloads.add(new Download(_thumbURL,Paths.get(_outFol, _fnp.getNextName()).toString()));
+            try {
+                Thread.sleep(Util.getDelay_H());
+            } catch (InterruptedException e) {
+                setGalleryState("INTERRUPT");
+                Debug.Log("SLEEP INTERRUPT IN GALLERYDOWNLOADER!");
+            }
+        }
+    }
+    @Override
+    protected GalleryResult call() throws Exception
+    {
+        isAlive = true;
         setGalleryState("Meta");
         _html = new HTMLDownloader(_url).get();
 
@@ -112,19 +149,22 @@ public class GalleryDownloader
         char c = _html.charAt(0);
         if(c == 65533)
         {
-            Fail("BAD COOKIE");
+            setGalleryState("NULL HTML");
+            _isComplete.setValue(true);
             return GalleryResult.FAILURE;
         }
 
         _galleryName.setValue(galleryName());
         if(_html == null)
         {
-            Fail("NULL HTML");
+            setGalleryState("NULL HTML");
+            _isComplete.setValue(true);
             return GalleryResult.FAILURE;
         }
         if(isGalleryRemoved())
         {
-            Fail("REMOVED");
+            setGalleryState("REMOVED");
+            _isComplete.setValue(true);
             Debug.Log(String.format(str_Gallery_Removed, _url));
             return GalleryResult.FAILURE;
         }
@@ -132,89 +172,47 @@ public class GalleryDownloader
         _outFol = Paths.get(Util.fileOutput, Util.fileDownloads, _galleryName.get()).toString();
         Util.makeDir(_outFol);
 
-        try
-        {
-            _imageCount = Integer.parseInt(Util.getRegex(_html, rgx_ImageCount, 1).get(0));
-        }
-        catch (Exception e)
-        {
-            Debug.Log(String.format(str_Gallery_Count_Error, _url));
-            return GalleryResult.FAILURE;
-        }
-        if(_imageCount == 0)
-        {
-            Fail("COUNT ERROR");
-            return GalleryResult.FAILURE;
-        }
-        int _pageCount = findPageCount();
+        populateImageCount();
+        if(_imageCount == 0) return GalleryResult.FAILURE;
+        populateGalleryPages();
+        populateThumbs();
 
-        Debug.Log(String.format(str_Gallery_Images_Pages, _imageCount, _pageCount + 1));
-
-        String _baseURL = String.format("http://exhentai.org/g/%s/%s/?p=", _pt, _gid);
-        for(int i = 0; i <= _pageCount; i++)
-            _pageURLs.add(_baseURL + String.valueOf(i));
-        FileNameProvider _fnp = new FileNameProvider(_imageCount);
-        setGalleryState("Thumbs");
-        for(int i = 0; i < _pageURLs.size(); i++)
-        {
-            _progress.set(String.format("%s/%s", i+1, _pageURLs.size()));
-            ArrayList<String> _thumbURLs = findThumbsOnPage(_pageURLs.get(i));
-            for(String _thumbURL : _thumbURLs)
-                _pages.add(new PageDownloader(_thumbURL,Paths.get(_outFol, _fnp.getNextName()).toString()));
-            try {
-                Thread.sleep(Util.getDelay_H());
-            } catch (InterruptedException e) {
-                setGalleryState("INTERRUPT");
-                Debug.Log("SLEEP INTERRUPT IN GALLERYDOWNLOADER!");
-            }
-        }
         setGalleryState("Downloading");
-        int _currentAttempt = 0;
-        int _successfulAttempts = 0;
-        _progress.set(String.format("%s/%s", _currentAttempt, _imageCount));
-        while(_pages.size() > 0)
+        //_progress.set(String.format("%s/%s", _currentAttempt, _imageCount));
+
+        int i;
+
+        while((i = getNextTask()) != -1)
         {
-            setGalleryState(String.format("Trying p%s", _currentAttempt+1));
-            PageDownloader _pd = _pages.get(0);
+            Download _d = _downloads.get(i);
+            setGalleryState(String.format("Trying p%s", i+1));
             if(!isAlive)
             {
-                Fail("INTERRUPT");
+                setGalleryState("INTERRUPT");
+                //_isComplete.setValue(true);
                 return GalleryResult.FAILURE;
             }
             DownloadResult _dr;
             try
             {
-                _dr = _pd.call();
+                _dr = _d.call();
+                _d._dr = _dr;
             }
             catch (Exception e)
             {
-                Debug.Log(String.format(str_Page_Error, _pd.getPageURL()));
+                Debug.Log(String.format(str_Page_Error, _d.getURL()));
                 _dr = DownloadResult.FAILURE;
             }
             if(_dr == DownloadResult.BANDWIDTH_EXCEEDED)
             {
-                Fail("BANDWIDTH");
+                setGalleryState("BANDWIDTH");
+                _isComplete.setValue(true);
                 return GalleryResult.BANDWIDTH_EXCEEDED;
             }
-            else if(_dr == DownloadResult.FAILURE)
+            else if(_dr == DownloadResult.SUCCESS)
             {
-                if(_pd._currentAttempt >= Util.MAX_ATTEMPTS)
-                {
-                    setGalleryState("PAGE ERROR");
-                    Debug.Log(String.format(str_Retry_Exceeded, _pd.getPageURL()));
-                    _pages.remove(_pd);
-                    _currentAttempt++;
-                    //return GalleryResult.FAILURE;
-                }
-                Util.removeFile(_pd.getFilePath());
-            }
-            else
-            {
-                _currentAttempt++;
-                _successfulAttempts++;
-                _pages.remove(_pd);
-                Debug.Log(String.format(str_Page_Successful, _currentAttempt));
-                _progress.set(String.format("%s/%s", _successfulAttempts, _imageCount));
+                Debug.Log(String.format(str_Page_Successful, i));
+                _progress.set(String.format("%s/%s", i+1, _imageCount));
                 try {
                     if(_dr != DownloadResult.SKIPPED)
                         Thread.sleep(Util.getDelay());
@@ -225,20 +223,34 @@ public class GalleryDownloader
                 }
             }
         }
+
+
         setGalleryState("Done");
         _isComplete.setValue(true);
         _progress.set(String.format("%s/%s", _imageCount, _imageCount));
         Debug.Log(str_Gallery_Successful);
         return GalleryResult.SUCCESS;
     }
+    public int getNextTask()
+    {
+        for(int i = 0; i < _downloads.size(); i++)
+        {
+            Download _pd = _downloads.get(i);
+            if(_pd._dr == null) return i;
+            else if(_pd._dr == DownloadResult.RETRYING)
+            {
+                if(_pd._currentAttempt < Util.MAX_ATTEMPTS)
+                {
+                    _downloads.set(i, _pd.retry());
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
     public StringProperty getTaskProgress()
     {
         return _progress;
-    }
-    private void Fail(String s)
-    {
-        setGalleryState(s);
-        _isComplete.setValue(true);
     }
     private void setGalleryState(String s)
     {

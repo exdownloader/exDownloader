@@ -1,6 +1,7 @@
 package ex;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
@@ -13,7 +14,7 @@ public class Debug
         if(!Util.LOGGING_ENABLED) return;
         try
         {
-            _writer = new BufferedWriter(new FileWriter(new File(Paths.get(Util.fileOutput, Util.fileLog).toString())));
+            _writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(Paths.get(Util.fileOutput, Util.fileLog).toString()), StandardCharsets.UTF_8));
         }
         catch(Exception e)
         {
@@ -64,7 +65,7 @@ public class Debug
     {
         try
         {
-            BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path),"UTF-8"));
+            BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path), StandardCharsets.UTF_8));
             w.write(msg);
             w.close();
         }

@@ -1,11 +1,14 @@
 package ex;
 
 import UI.MainForm;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TaskHandler
 {
@@ -15,7 +18,7 @@ public class TaskHandler
     private ObservableList<GalleryDownloader> _tasks = FXCollections.observableArrayList();
     private Thread _taskThread;
     private GalleryDownloader _currentTask;
-    private boolean isStopping = false;
+    private AtomicBoolean isStopping = new AtomicBoolean(false);
     public BooleanProperty isBusy = new SimpleBooleanProperty(false);
     public ExInfo exInfo = new ExInfo();
 
@@ -38,9 +41,11 @@ public class TaskHandler
 
     public void Start()
     {
+        Debug.Log("TaskHandler: Start invoked.");
         if(isBusy.getValue()) return;
         if(_tasks.size() == 0) return;
         isBusy.set(true);
+        isStopping.set(false);
 
         exInfo.populateInfo();
         String _strExInfo = String.format(str_ExInfoLimit, exInfo.limitCurrent, exInfo.limitMax, exInfo.limitRecoverRate);
@@ -48,13 +53,12 @@ public class TaskHandler
 
         if(exInfo.limitCurrent < exInfo.limitMax)
         {
-            isStopping = false;
             _taskThread = new Thread(this::Download);
             _taskThread.start();
         }
         else
         {
-            MainForm.Alert(Alert.AlertType.ERROR, "Limit exceeded!", str_ExInfoOverLimit, _strExInfo);
+            Platform.runLater(() -> MainForm.Alert(Alert.AlertType.ERROR, "Limit exceeded!", str_ExInfoOverLimit, _strExInfo));
             Debug.Log(str_ExInfoOverLimit);
             isBusy.set(false);
         }
@@ -62,8 +66,10 @@ public class TaskHandler
     }
     public void Stop()
     {
-        if(isStopping) return;
-        isStopping = true;
+        Debug.Log("TaskHandler: Stop invoked.");
+        if(!isBusy.getValue()) return;
+        if(isStopping.get()) return;
+        isStopping.set(true);
 
         try {
             if(_currentTask != null)
@@ -76,12 +82,13 @@ public class TaskHandler
     }
     private void Download()
     {
-        while(!isStopping)
+        while(!isStopping.get())
             DownloadNext();
     }
     private void DownloadNext()
     {
-        if(isStopping) return;
+        Debug.Log("TaskHandler: DownloadNext invoked.");
+        if(isStopping.get()) return;
         try
         {
             _currentTask = null;
@@ -97,8 +104,7 @@ public class TaskHandler
             }
             else
             {
-                GalleryResult _gr = _currentTask.Download();
-                _currentTask.getIsComplete().setValue(true);
+                GalleryResult _gr = _currentTask.call();
                 if(_gr == GalleryResult.BANDWIDTH_EXCEEDED)
                 {
                     Stop();

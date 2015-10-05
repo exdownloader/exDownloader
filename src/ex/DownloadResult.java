@@ -5,5 +5,6 @@ public enum DownloadResult
     SUCCESS,
     FAILURE,
     SKIPPED,
-    BANDWIDTH_EXCEEDED
+    BANDWIDTH_EXCEEDED,
+    RETRYING
 }
