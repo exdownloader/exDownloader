@@ -2,6 +2,8 @@
 ipb_member_id=
 ipb_pass_hash=
 
+#Used to download full/sample size.
+PREFER_FULL_SIZE=0
 #Used to enable/disable logging.
 LOGGING_ENABLED=1
 #Minimum time between page downloads (ms)

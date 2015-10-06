@@ -55,7 +55,6 @@ public class GalleryDownloader extends Task<GalleryResult>
 
         _url = url;
         _downloads = new ArrayList<>();
-        _pageURLs = new ArrayList<>();
 
         _galleryName.setValue(_url);
     }
@@ -111,11 +110,12 @@ public class GalleryDownloader extends Task<GalleryResult>
     }
     private void populateGalleryPages()
     {
-        _pageURLs.clear();
-        int _pageCount = _imageCount / _imagesPerPage;
-        Debug.Log(String.format(str_Gallery_Images_Pages, _imageCount, _pageCount + 1));
+        _pageURLs = new ArrayList<>(_imageCount);
+        float r = _imageCount / (float)_imagesPerPage;
+        int _pageCount = (int)Math.ceil(r);
+        Debug.Log(String.format(str_Gallery_Images_Pages, _imageCount, _pageCount));
         String _baseURL = String.format("http://exhentai.org/g/%s/%s/?p=", _pt, _gid);
-        for(int i = 0; i <= _pageCount; i++)
+        for(int i = 0; i < _pageCount; i++)
             _pageURLs.add(_baseURL + String.valueOf(i));
     }
     private void populateThumbs()

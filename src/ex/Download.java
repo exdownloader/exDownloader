@@ -18,12 +18,12 @@ public class Download extends Task<DownloadResult> implements OnProgressListener
     private static final String rgx_PageFull = "\"(http://exhentai.org/fullimg.php\\S*?)\"";
     private static final String str_BandwidthExceeded = "http://exhentai.org/img/509.gif";
 
-    private static final String str_ImageRegexFailed = "PageDownloader failed to match image for %s, info in %s";
+    private static final String str_ImageRegexFailed = "Downloader failed to match image for %s, info in %s";
     private static final String str_Error_Skipped = "Downloader skipped existing file: %s";
     private static final String str_Error_NullHTML = "Downloader encountered null HTML.";
     private static final String str_Downloading = "Downloader downloading file from: %s";
     private static final String str_Download_Idle = "Downloader failed idle check, transferring %s bytes over %sms at %s%%";
-    private static final String str_Downloaded = "Downloader downloaded file from: %s";
+    private static final String str_Downloaded = "Downloader downloaded file to %s";
 
     public int _currentAttempt;
     private String _url;
@@ -53,7 +53,7 @@ public class Download extends Task<DownloadResult> implements OnProgressListener
             return null;
         }
         ArrayList<String> _imageLink = Util.getRegex(_pageHTML,rgx_PageFull, 1);
-        if(_imageLink.size() == 0) _imageLink =  Util.getRegex(_pageHTML,rgx_Page, 1);
+        if(Util.PREFER_SAMPLE_SIZE || _imageLink.size() == 0) _imageLink =  Util.getRegex(_pageHTML,rgx_Page, 1);
         if(_imageLink.size() == 0)
         {
             Debug.File(Util.file_Err_PageDownloaderRegexFailed, _pageHTML);
@@ -110,7 +110,7 @@ public class Download extends Task<DownloadResult> implements OnProgressListener
             _fos.close();
 
             cancelIdleCheck();
-            Debug.Log(String.format(str_Downloaded, _url));
+            Debug.Log(String.format(str_Downloaded, _output));
             return DownloadResult.SUCCESS;
         }
         catch(Exception e) {}

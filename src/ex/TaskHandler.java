@@ -67,14 +67,13 @@ public class TaskHandler
     public void Stop()
     {
         Debug.Log("TaskHandler: Stop invoked.");
-        if(!isBusy.getValue()) return;
         if(isStopping.get()) return;
-        isStopping.set(true);
 
         try {
             if(_currentTask != null)
                 _currentTask.isAlive = false;
             isBusy.set(false);
+            isStopping.set(true);
         } catch (Exception e)
         {
             Debug.Log("ERROR STOPPING TASKHANDLER!");

@@ -43,6 +43,8 @@ public class Util
     public static long TRANSFER_THRESHOLD_TIME = 60;
     public static long TRANSFER_THRESHOLD_BYTES = 1024;
 
+    public static boolean PREFER_SAMPLE_SIZE = false;
+
     public static String validPath(String path)
     {
         String invalidChars = "\\/:*?\"<>|";
@@ -51,6 +53,10 @@ public class Util
             char c = invalidChars.charAt(i);
             path = path.replace(c, '_');
         }
+
+        while(path.contains(".."))
+            path = path.replace("..", "");
+
         return path;
     }
 
@@ -76,6 +82,7 @@ public class Util
             THREAD_DELAY_H_R = Integer.parseInt(settings.getProperty("THREAD_DELAY_H_R", "200"));
             TRANSFER_THRESHOLD_TIME = Long.parseLong(settings.getProperty("TRANSFER_THRESHOLD_TIME", "60"));
             TRANSFER_THRESHOLD_BYTES =  Long.parseLong(settings.getProperty("TRANSFER_THRESHOLD_BYTES", "1024"));
+            PREFER_SAMPLE_SIZE =  Integer.parseInt(settings.getProperty("PREFER_SAMPLE_SIZE", "0")) == 1;
             USER_AGENT = settings.getProperty("USER_AGENT", "");
             COOKIE = String.format("%s=%s;%s=%s",Util.res_cookieUser, settings.getProperty(Util.res_cookieUser),Util.res_cookiePass,settings.getProperty(Util.res_cookiePass));
             settingsStream.close();

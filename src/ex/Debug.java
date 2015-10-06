@@ -45,8 +45,7 @@ public class Debug
         }
         catch(Exception e)
         {
-            System.out.println("Error in Log Log");
-            File("Logging_Error.txt", msg);
+            System.out.printf("Error in Log %s", msg);
         }
     }
     public static void close()
