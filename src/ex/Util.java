@@ -145,6 +145,20 @@ public class Util
         while (_matcher.find()) _regexMatches.add(_matcher.group(group));
         return _regexMatches;
     }
+    public static String escapeHTMLString(String input)
+    {
+        Matcher _matcher = Pattern.compile("&#(\\d+);").matcher(input);
+        while (_matcher.find())
+        {
+            char c = (char)Integer.parseInt(_matcher.group(1));
+            input = input.replace(_matcher.group(0), Character.toString(c));
+        }
+        input = input.replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&amp;", "&")
+                .replace("&quot;", "\"");
+        return input;
+    }
     public static int getDelay()
     {
         return THREAD_DELAY + (int) (Math.random() * THREAD_DELAY_R);

@@ -62,6 +62,7 @@ public class GalleryDownloader extends Task<GalleryResult>
     private String galleryName()
     {
         String galleryName = Util.getRegex(_html, rgx_GalleryName, 1).get(0);
+        galleryName = Util.escapeHTMLString(galleryName);
         galleryName = galleryName.replaceAll("\\(.*?\\)", "");
         while (galleryName.contains("  "))
             galleryName = galleryName.replaceAll("  ", " ");

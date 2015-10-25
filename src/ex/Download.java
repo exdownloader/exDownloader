@@ -48,10 +48,7 @@ public class Download extends Task<DownloadResult> implements OnProgressListener
     {
         HTMLDownloader _pageDownloader = new HTMLDownloader(_url);
         String _pageHTML = _pageDownloader.get();
-        if(Util.getRegex(_pageHTML, str_BandwidthExceeded, 0).size() > 0)
-        {
-            return null;
-        }
+        if(_pageHTML.contains(str_BandwidthExceeded)) return null;
         ArrayList<String> _imageLink = Util.getRegex(_pageHTML,rgx_PageFull, 1);
         if(Util.PREFER_SAMPLE_SIZE || _imageLink.size() == 0) _imageLink =  Util.getRegex(_pageHTML,rgx_Page, 1);
         if(_imageLink.size() == 0)
