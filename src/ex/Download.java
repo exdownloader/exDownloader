@@ -16,6 +16,7 @@ public class Download extends Task<DownloadResult> implements OnProgressListener
     private static final String rgx_ValidURL = "http://exhentai.org/s(/\\w+){2}-\\d+";
     private static final String rgx_Page = "\"img\" src=\"(http://\\S+)\"";
     private static final String rgx_PageFull = "\"(http://exhentai.org/fullimg.php\\S*?)\"";
+    private static final String rgx_NL = "nl\\('(\\d+-\\d+)'\\)";
     private static final String str_BandwidthExceeded = "http://exhentai.org/img/509.gif";
 
     private static final String str_ImageRegexFailed = "Downloader failed to match image for %s, info in %s";
@@ -28,7 +29,7 @@ public class Download extends Task<DownloadResult> implements OnProgressListener
     public int _currentAttempt;
     private String _url;
     private String _path;
-
+    private String _output;
 
     private Timer downloadIdleTimer;
     private TimerTask downloadIdleCheck;
@@ -49,6 +50,20 @@ public class Download extends Task<DownloadResult> implements OnProgressListener
         HTMLDownloader _pageDownloader = new HTMLDownloader(_url);
         String _pageHTML = _pageDownloader.get();
         if(_pageHTML.contains(str_BandwidthExceeded)) return null;
+        char c = _pageHTML.charAt(0);
+        if(c == 65533) return null;
+
+        if(_currentAttempt > 1)
+        {
+            Debug.Log("Downloader requesting new page link...");
+            String _nl = Util.getRegex(_pageHTML, rgx_NL, 1).get(0);
+            _url = Util.urlAppendParam(_url, String.format("nl=%s", _nl));
+            Debug.Log(String.format("Downloader found new link: %s", _url));
+            _pageDownloader = new HTMLDownloader(_url);
+            _pageHTML = _pageDownloader.get();
+            if(_pageHTML.contains(str_BandwidthExceeded)) return null;
+        }
+
         ArrayList<String> _imageLink = Util.getRegex(_pageHTML,rgx_PageFull, 1);
         if(Util.PREFER_SAMPLE_SIZE || _imageLink.size() == 0) _imageLink =  Util.getRegex(_pageHTML,rgx_Page, 1);
         if(_imageLink.size() == 0)
@@ -76,13 +91,11 @@ public class Download extends Task<DownloadResult> implements OnProgressListener
         {
             _currentAttempt++;
             String _imageLink = getImageLink();
-            if (_imageLink == null)
-            {
-                return DownloadResult.BANDWIDTH_EXCEEDED;
-            }
+            if (_imageLink == null) return DownloadResult.BANDWIDTH_EXCEEDED;
+
             Debug.Log(String.format(str_Downloading, _imageLink));
 
-            String _output = String.format("%s.%s", _path, getExtension(_imageLink));
+            _output = String.format("%s.%s", _path, getExtension(_imageLink));
 
             _fos = new FileOutputStream(_output);
             URLConnection connection = new URL(_imageLink).openConnection();
@@ -111,7 +124,9 @@ public class Download extends Task<DownloadResult> implements OnProgressListener
             return DownloadResult.SUCCESS;
         }
         catch(Exception e) {}
-        return DownloadResult.FAILURE;
+        try{_fos.close();}catch(Exception e){}
+        if(_output != null) Util.removeFile(_output);
+        return DownloadResult.RETRYING;
     }
     public void setCurrentAttempt(int n)
     {

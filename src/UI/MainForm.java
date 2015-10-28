@@ -1,7 +1,6 @@
 package UI;
 
 import ex.*;
-import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -14,13 +13,14 @@ import javafx.event.ActionEvent;
 import javafx.scene.shape.SVGPath;
 
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class MainForm implements Initializable
+public class MainForm implements Initializable, ClipboardCallback, FileCallback
 {
     @FXML private Button btn_Add;
     @FXML private Button btn_Remove;
@@ -32,7 +32,7 @@ public class MainForm implements Initializable
     @FXML private SVGPath gfx_Start;
     @FXML private Hyperlink lbl_ExInfo;
 
-    private static final String rgx_ID = "^http://exhentai.org/g/(\\w+)/(\\w+)/?$";
+    private static final String rgx_ID = "http://exhentai.org/g/(\\w+)/(\\w+)/?";
 
     private final String str_UI_Control_Clicked = "Control clicked: %s";
     private final String str_UI_TT_AddTask = "Add Task";
@@ -46,6 +46,8 @@ public class MainForm implements Initializable
     private final String str_UI_TC_Done = "?";
 
     private TaskHandler _th = new TaskHandler();
+    private ClipboardMonitor _cm;
+    private FileMonitor _fm;
 
     @Override
     public void initialize(URL fxmlFileLocation, ResourceBundle resources)
@@ -112,6 +114,12 @@ public class MainForm implements Initializable
         Debug.InsertBlank();
 
         parseList();
+
+        _cm = new ClipboardMonitor();
+        _cm.setListener(this);
+
+        _fm = new FileMonitor(Paths.get(Util.fileOutput, Util.fileConf).toString());
+        _fm.setListener(this);
     }
 
     public void controlClicked(ActionEvent event)
@@ -148,7 +156,11 @@ public class MainForm implements Initializable
         else if(source == btn_Remove)
         {
             if(_th.isBusy.get()) return;
+            int i = tree_Tasks.getSelectionModel().getSelectedIndex();
             _th.removeTask(tree_Tasks.getSelectionModel().getSelectedItem());
+            int s = _th.getTasks().size();
+            if(s > 0) tree_Tasks.getSelectionModel().select(Math.min(i, s-1));
+            tree_Tasks.requestFocus();
         }
         else if(source == btn_Settings)
         {
@@ -161,6 +173,10 @@ public class MainForm implements Initializable
     }
     public void Terminate()
     {
+        Debug.Log("Stopping clipboard monitor.");
+        _cm.endMonitoring();
+        Debug.Log("Stopping file monitor.");
+        _fm.endMonitoring();
         Debug.Log("Stopping TaskHandler.");
         if(_th.isBusy.get()) _th.Stop();
     }
@@ -172,7 +188,7 @@ public class MainForm implements Initializable
     }
     private boolean addTask(String url)
     {
-        boolean isMatch = Util.isMatch(url, rgx_ID);
+        boolean isMatch = Util.isMatch(url, String.format("^%s$", rgx_ID));
         if(isMatch)
             _th.addTask(new GalleryDownloader(url));
         return isMatch;
@@ -184,5 +200,19 @@ public class MainForm implements Initializable
         alert.setHeaderText(header);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    @Override
+    public void ClipboardChanged(String s)
+    {
+        List<String> _galleryURLs = Util.getRegex(s, rgx_ID, 0);
+        _galleryURLs.forEach(this::addTask);
+    }
+
+    @Override
+    public void FileUpdated(Path p)
+    {
+        Debug.Log("Reloading config...");
+        Util.parseConfig();
     }
 }

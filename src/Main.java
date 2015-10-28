@@ -39,6 +39,7 @@ public class Main extends Application
         Util.makeDir(Util.fileOutput);
         Util.makeDir(Paths.get(Util.fileOutput, Util.fileDownloads).toString());
         Util.parseConfig();
+        Util.cookieHandlerInit();
         Debug.create();
         launch(args);
     }

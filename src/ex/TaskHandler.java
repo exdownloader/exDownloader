@@ -27,6 +27,11 @@ public class TaskHandler
     }
     public void addTask(GalleryDownloader gd)
     {
+        if(_tasks.contains(gd))
+        {
+            Debug.Log(String.format("TaskHandler skipping existing task: %s", gd));
+            return;
+        }
         _tasks.add(gd);
     }
     public void removeTask(GalleryDownloader gd)
@@ -104,7 +109,7 @@ public class TaskHandler
             else
             {
                 GalleryResult _gr = _currentTask.call();
-                if(_gr == GalleryResult.BANDWIDTH_EXCEEDED)
+                if(_gr == GalleryResult.BANDWIDTH_EXCEEDED || _gr == GalleryResult.FAILURE)
                 {
                     Stop();
                     _currentTask = null;

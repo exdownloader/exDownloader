@@ -212,7 +212,7 @@ public class GalleryDownloader extends Task<GalleryResult>
             }
             else if(_dr == DownloadResult.SUCCESS)
             {
-                Debug.Log(String.format(str_Page_Successful, i));
+                Debug.Log(String.format(str_Page_Successful, i+1));
                 _progress.set(String.format("%s/%s", i+1, _imageCount));
                 try {
                     if(_dr != DownloadResult.SKIPPED)
@@ -222,6 +222,13 @@ public class GalleryDownloader extends Task<GalleryResult>
                     setGalleryState("INTERRUPT");
                     Debug.Log("SLEEP INTERRUPT IN GALLERYDOWNLOADER!");
                 }
+            }
+            else if(_dr == DownloadResult.FAILURE)
+            {
+                Debug.Log("GalleryDownloader download failed.");
+                setGalleryState("FAILURE");
+                _isComplete.setValue(true);
+                return GalleryResult.FAILURE;
             }
         }
 
@@ -265,5 +272,24 @@ public class GalleryDownloader extends Task<GalleryResult>
 
     public String getURL() {
         return _url;
+    }
+    private String getID()
+    {
+        return String.format("%s-%s", _pt, _gid);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getID().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof GalleryDownloader)) return false;
+        if (obj == this) return true;
+        GalleryDownloader other = (GalleryDownloader) obj;
+        return getID().equals(other.getID());
     }
 }

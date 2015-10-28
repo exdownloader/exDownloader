@@ -86,14 +86,16 @@ public class Util
             USER_AGENT = settings.getProperty("USER_AGENT", "");
             COOKIE = String.format("%s=%s;%s=%s",Util.res_cookieUser, settings.getProperty(Util.res_cookieUser),Util.res_cookiePass,settings.getProperty(Util.res_cookiePass));
             settingsStream.close();
-
-            //Configure URL connections to retain session state and install cookies.
-            CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
         }
         catch (Exception e)
         {
         	Debug.Log(String.format("Error reading %s", fileConf));
         }
+    }
+    public static void cookieHandlerInit()
+    {
+        //Configure URL connections to retain session state and install cookies.
+        CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
     }
     public static void makeDir(String path)
     {
@@ -173,8 +175,9 @@ public class Util
         try
         {
             Files.deleteIfExists(Paths.get(path));
+            Debug.Log(String.format("Deleted file %s", path));
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             Debug.Log(String.format("Error deleting %s", path));
         }
@@ -187,5 +190,11 @@ public class Util
                     Files.exists(Paths.get(path + ".png")) ||
                     Files.exists(Paths.get(path + ".gif"));
         return b;
+    }
+
+    public static String urlAppendParam(String url, String paramString)
+    {
+        url += ((url.indexOf("?") == -1)? "?" : "&") + paramString;
+        return url;
     }
 }
