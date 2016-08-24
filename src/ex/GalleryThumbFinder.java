@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class GalleryThumbFinder
 {
     private static final String str_ThumbRegexFailed = "GalleryThumbFinder failed to match thumbs, info in %s";
-    private final String rgx_Thumb = "<a href=\"(http://exhentai.org/s/.*?)\">";
+    private final String rgx_Thumb = "<a href=\"(https://exhentai.org/s/.*?)\">";
     private String _html;
     private ArrayList<String> _thumbURLs;
 

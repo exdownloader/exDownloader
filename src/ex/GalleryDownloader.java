@@ -22,9 +22,11 @@ public class GalleryDownloader extends Task<GalleryResult>
     private static final String str_Gallery_Successful = "GalleryDownloader successfully downloaded gallery.";
     private static final String str_Retry_Exceeded = "GalleryDownloader exceeded retry limit for page %s";
 
-    private static final String rgx_ID = "(http://)?exhentai.org/g/(\\w+)/(\\w+)/?";
+    private static final String str_Page_URL = "https://exhentai.org/g/%s/%s/?p=";
+
+    private static final String rgx_ID = "(https://)?exhentai.org/g/(\\w+)/(\\w+)/?";
     private static final String rgx_GalleryRemoved = "<title>GalleryDownloader Not Available";
-    private static final String rgx_Gallery = "http://exhentai.org/g/(\\w+/){2}\\?p=(\\d+)";
+    private static final String rgx_Gallery = "https://exhentai.org/g/(\\w+/){2}\\?p=(\\d+)";
     private static final String rgx_ImageCount = "Showing (\\d+) - (\\d+) of (\\d+) images";
     private static final String rgx_GalleryName = "id=\"gn\">(.*?)<";
 
@@ -115,7 +117,7 @@ public class GalleryDownloader extends Task<GalleryResult>
         float r = _imageCount / (float)_imagesPerPage;
         int _pageCount = (int)Math.ceil(r);
         Debug.Log(String.format(str_Gallery_Images_Pages, _imageCount, _pageCount));
-        String _baseURL = String.format("http://exhentai.org/g/%s/%s/?p=", _pt, _gid);
+        String _baseURL = String.format(str_Page_URL, _pt, _gid);
         for(int i = 0; i < _pageCount; i++)
             _pageURLs.add(_baseURL + String.valueOf(i));
     }

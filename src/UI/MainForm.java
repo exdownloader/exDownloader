@@ -32,7 +32,7 @@ public class MainForm implements Initializable, ClipboardCallback, FileCallback
     @FXML private SVGPath gfx_Start;
     @FXML private Hyperlink lbl_ExInfo;
 
-    private static final String rgx_ID = "http://exhentai.org/g/(\\w+)/(\\w+)/?";
+    private static final String rgx_ID = "https://exhentai.org/g/(\\w+)/(\\w+)/?";
 
     private final String str_UI_Control_Clicked = "Control clicked: %s";
     private final String str_UI_TT_AddTask = "Add Task";
